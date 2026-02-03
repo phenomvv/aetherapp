@@ -14,7 +14,9 @@ import {
   Check, 
   ShieldCheck,
   Palette,
-  X
+  X,
+  Volume2,
+  Cpu
 } from 'lucide-react';
 import { Task } from '../types';
 
@@ -83,6 +85,10 @@ const SettingsView: React.FC<SettingsViewProps> = ({ tasks, setTasks, userData, 
     setUserData({ ...userData, notifications: !userData.notifications });
   };
 
+  const toggleAudio = () => {
+    setUserData({ ...userData, audioEnabled: !userData.audioEnabled });
+  };
+
   const toggleTheme = () => {
     setUserData({ ...userData, trueDarkMode: !userData.trueDarkMode });
   };
@@ -98,7 +104,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ tasks, setTasks, userData, 
   };
 
   return (
-    <div className="p-6 animate-in fade-in duration-500 pb-32">
+    <div className="p-6 animate-in fade-in duration-500 pb-8 flex flex-col min-h-full">
       <h1 className="text-3xl font-bold mb-8 text-main">Settings</h1>
 
       {/* Profile Section */}
@@ -148,6 +154,14 @@ const SettingsView: React.FC<SettingsViewProps> = ({ tasks, setTasks, userData, 
       <SectionTitle title="Preferences" />
       <div className="bg-surface rounded-[28px] overflow-hidden border border-subtle mb-8 transition-all duration-500 shadow-sm">
         <SettingToggle 
+          icon={<Volume2 className="w-5 h-5" />} 
+          label="Audio Feedback" 
+          active={userData.audioEnabled} 
+          onToggle={toggleAudio}
+          color="#2DD4BF"
+        />
+        <Divider />
+        <SettingToggle 
           icon={<Bell className="w-5 h-5" />} 
           label="Push Notifications" 
           active={userData.notifications} 
@@ -168,7 +182,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ tasks, setTasks, userData, 
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-zinc-500/10 transition-colors cursor-pointer"
         >
           <div className="flex items-center gap-4">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-accent-muted text-accent border border-accent/10">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center border border-subtle bg-zinc-500/5" style={{ color: userData.accentColor }}>
               <Palette className="w-5 h-5" />
             </div>
             <span className="text-sm font-medium text-main">Accent Color</span>
@@ -225,7 +239,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ tasks, setTasks, userData, 
 
       {/* Support Section */}
       <SectionTitle title="Support" />
-      <div className="bg-surface rounded-[28px] overflow-hidden border border-subtle mb-12 transition-all duration-500 shadow-sm">
+      <div className="bg-surface rounded-[28px] overflow-hidden border border-subtle mb-6 transition-all duration-500 shadow-sm">
         <SettingItem 
           icon={<MessageCircle className="w-5 h-5" />} 
           label="Contact Support" 
@@ -237,10 +251,17 @@ const SettingsView: React.FC<SettingsViewProps> = ({ tasks, setTasks, userData, 
           label="Privacy Policy" 
           color="#A5F3E3"
         />
-        <Divider />
-        <div className="px-6 py-4 flex items-center justify-between">
-          <span className="text-xs font-bold text-muted uppercase tracking-widest">Version</span>
-          <span className="text-xs font-bold text-muted">2.1.0 (Aether)</span>
+      </div>
+
+      {/* Bottom info to fill the gap */}
+      <div className="mt-auto pt-6 border-t border-subtle flex flex-col items-center">
+        <div className="flex items-center gap-2 text-muted mb-4">
+          <Cpu className="w-3 h-3 animate-pulse text-accent" />
+          <span className="text-[10px] font-bold uppercase tracking-widest">Aether AI System Ready</span>
+        </div>
+        <div className="w-full flex justify-between items-center px-2">
+          <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Aether Task</span>
+          <span className="text-[10px] font-bold text-muted uppercase tracking-widest opacity-60">v2.1.0</span>
         </div>
       </div>
 

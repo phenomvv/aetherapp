@@ -25,7 +25,7 @@ const DailyView: React.FC<DailyViewProps> = ({ tasks, toggleTask, deleteTask }) 
   return (
     <div className="p-6 min-h-full">
       <header className="flex justify-between items-center mb-8">
-        <button onClick={() => navigate('/')} className="p-2 bg-zinc-900 rounded-full">
+        <button onClick={() => navigate('/')} className="p-2 bg-zinc-900 rounded-full active:scale-95 transition-transform">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <h1 className="text-lg font-bold">Daily Checklist</h1>
@@ -77,54 +77,73 @@ const DailyView: React.FC<DailyViewProps> = ({ tasks, toggleTask, deleteTask }) 
 
 const DailyTaskItem: React.FC<{ 
   task: Task; 
-  toggleTask: (id: string) => void;
+  toggleTask: (id: string) => void; 
   deleteTask: (id: string) => void;
 }> = ({ task, toggleTask, deleteTask }) => {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const startTouchX = useRef(0);
+  const startTouchY = useRef(0);
   const isSwiping = useRef(false);
+  const hasLock = useRef(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     startTouchX.current = e.touches[0].clientX;
+    startTouchY.current = e.touches[0].clientY;
     isSwiping.current = true;
+    hasLock.current = false;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isSwiping.current) return;
     const currentX = e.touches[0].clientX;
-    const offset = Math.min(0, Math.max(-80, currentX - startTouchX.current));
+    const currentY = e.touches[0].clientY;
+    const dx = currentX - startTouchX.current;
+    const dy = currentY - startTouchY.current;
+
+    if (!hasLock.current) {
+      if (Math.abs(dy) > Math.abs(dx)) {
+        isSwiping.current = false;
+        return;
+      }
+      if (Math.abs(dx) > 10) {
+        hasLock.current = true;
+      } else {
+        return;
+      }
+    }
+
+    const offset = Math.min(0, Math.max(-100, dx));
     setSwipeOffset(offset);
   };
 
   const handleTouchEnd = () => {
     isSwiping.current = false;
-    if (swipeOffset < -40) {
+    if (swipeOffset < -50) {
+      if (navigator.vibrate) navigator.vibrate(10);
       setSwipeOffset(-70);
     } else {
       setSwipeOffset(0);
     }
+    hasLock.current = false;
   };
 
   return (
-    <div className="relative group overflow-hidden rounded-xl">
-      <div className="absolute inset-0 bg-red-500/10 flex justify-end items-center px-4">
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            deleteTask(task.id);
-          }}
-          className="text-red-500 p-2"
-        >
+    <div className="relative group overflow-hidden rounded-xl touch-pan-y select-none">
+      <div 
+        className="absolute inset-0 bg-red-500/20 backdrop-blur-sm flex justify-end items-center px-4"
+        onClick={(e) => { e.stopPropagation(); deleteTask(task.id); }}
+      >
+        <button className="text-red-500 p-2 active:scale-90 transition-transform">
           <Trash2 className="w-5 h-5" />
         </button>
       </div>
 
       <div 
-        onClick={() => toggleTask(task.id)}
+        onClick={() => swipeOffset === 0 && toggleTask(task.id)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="swipe-item flex items-center gap-4 py-4 px-2 border-b border-white/5 bg-[var(--bg-main)] group cursor-pointer transition-colors duration-500"
+        className="swipe-item flex items-center gap-4 py-4 px-2 border-b border-white/5 bg-[var(--bg-main)] group cursor-pointer transition-transform duration-300 ease-out"
         style={{ transform: `translateX(${swipeOffset}px)` }}
       >
         <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 ${
