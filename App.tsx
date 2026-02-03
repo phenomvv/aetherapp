@@ -12,8 +12,18 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>(() => {
-    const saved = localStorage.getItem('aether-tasks-v3');
-    return saved ? JSON.parse(saved) : [
+    // Attempt to recover data from newest to oldest keys
+    const savedV3 = localStorage.getItem('aether-tasks-v3');
+    if (savedV3) return JSON.parse(savedV3);
+
+    const savedV2 = localStorage.getItem('aether-tasks-v2');
+    if (savedV2) return JSON.parse(savedV2);
+
+    const savedV1 = localStorage.getItem('aether-tasks');
+    if (savedV1) return JSON.parse(savedV1);
+
+    // Default starting tasks if no history found
+    return [
       { id: '1', title: 'Q4 Product Roadmap', category: 'Work', completed: false, time: '5:00 PM', date: new Date().toISOString(), subtasks: [] },
       { id: '2', title: 'Review client feedback', category: 'Work', completed: true, time: 'Completed', date: new Date().toISOString() },
       { id: 'food-1', title: 'Chick-fil-A', category: 'Food', completed: false, time: 'Lunch', date: new Date().toISOString(), logoUrl: 'https://logo.clearbit.com/chick-fil-a.com' },
@@ -154,7 +164,6 @@ const App: React.FC = () => {
   const [newTaskIcon, setNewTaskIcon] = useState<string | undefined>(undefined);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Auto-set icon name based on category if not specifically chosen
   useEffect(() => {
     const cat = CATEGORIES.find(c => c.name === newTaskCategory);
     if (cat && (!newTaskIcon || !cat.suggestedIcons.includes(newTaskIcon))) {
@@ -167,7 +176,6 @@ const App: React.FC = () => {
     setIsProcessing(true);
     const taskId = Math.random().toString(36).substr(2, 9);
     
-    // Simple heuristic to try and find a logo if it's a known brand
     let logoUrl: string | undefined = undefined;
     const lowerTitle = newTaskTitle.toLowerCase();
     if (newTaskCategory === 'Food' || newTaskCategory === 'Shopping') {
